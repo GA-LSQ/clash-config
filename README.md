@@ -22,7 +22,7 @@ mihomo / OpenClash 多机场聚合配置模板。
 重装 OpenClash 后，在「运行状态 → 覆写模块 → 添加新模块 → 远程模块」填入以下 URL，即可自动拉取，无需手动上传文件：
 
 ```
-https://raw.githubusercontent.com/GA-LSQ/clash-config/main/openclash-overwrite.ini
+https://raw.githubusercontent.com/GA-LSQ/clash-config/main/openclash-overwrite.conf
 ```
 
 > 说明：
