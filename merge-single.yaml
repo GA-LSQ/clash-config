@@ -1,0 +1,740 @@
+# ==============================================================================
+#  Clash Verge Rev · 全局扩展配置（Merge）· 单订阅版
+# ==============================================================================
+
+# -------- TUN -----------------------------------------------------------
+tun:
+  enable: true
+  stack: mixed
+  device: Mihomo
+  auto-route: true
+  auto-detect-interface: true
+  strict-route: true
+  dns-hijack:
+    - any:53
+    - tcp://any:53
+  mtu: 9000
+
+# -------- DNS -----------------------------------------------------------
+dns:
+  enable: true
+  ipv6: false
+  listen: 127.0.0.1:1053
+  prefer-h3: false
+  respect-rules: true
+
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fake-ip-filter-mode: blacklist
+  fake-ip-filter:
+    - "*.lan"
+    - "*.local"
+    - "+.local"
+    - "localhost.ptlogin2.qq.com"
+    - "+.msftconnecttest.com"
+    - "+.msftncsi.com"
+    - "time.*.com"
+    - "ntp.*.com"
+    - "+.pool.ntp.org"
+    - "+.stun.*.*"
+    - "+.stun.*.*.*"
+    - "+.srv.nintendo.net"
+    - "*.n.n.srv.nintendo.net"
+    - "+.xboxlive.com"
+    - "*.mcdn.bilivideo.cn"
+    - "+.push.apple.com"
+    - "music.163.com"
+    - "+.126.net"
+    - "+.127.net"
+    - "lens.l.google.com"
+    - "stun.l.google.com"
+    - "+.cs.steampowered.com"
+    - "+.steamcontent.com"
+    - "+.steampipe.akamaized.net"
+    - "+.steamcdn-a.akamaihd.net"
+    - "+.steampipe.steamcontent.com"
+    - "+.steamusercontent.com"
+    - "+.steamstatic.com"
+
+  fallback: []
+
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+
+  proxy-server-nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+
+  nameserver:
+    - https://1.1.1.1/dns-query
+    - https://dns.google/dns-query
+
+  nameserver-policy:
+    "rule-set:cn-domain":
+      - https://dns.alidns.com/dns-query
+      - https://doh.pub/dns-query
+    "rule-set:private-domain":
+      - https://dns.alidns.com/dns-query
+      - https://doh.pub/dns-query
+    "+.qq.com,+.tencent.com,+.weixin.qq.com":
+      - https://doh.pub/dns-query
+    "+.taobao.com,+.tmall.com,+.aliyun.com,+.alipay.com":
+      - https://dns.alidns.com/dns-query
+    "+.jd.com,+.baidu.com,+.bilibili.com,+.zhihu.com,+.163.com":
+      - https://dns.alidns.com/dns-query
+    "+.bytedance.com,+.douyin.com,+.toutiao.com":
+      - https://dns.alidns.com/dns-query
+    "+.cs.steampowered.com,+.steamcontent.com,+.steampipe.akamaized.net,+.steamcdn-a.akamaihd.net,+.steampipe.steamcontent.com,+.steamusercontent.com,+.steamstatic.com":
+      - https://dns.alidns.com/dns-query
+      - https://doh.pub/dns-query
+
+# -------- 嗅探 ------------------------------------------------------------
+sniffer:
+  enable: true
+  force-dns-mapping: true
+  parse-pure-ip: true
+  override-destination: false
+  sniff:
+    HTTP:
+      ports: [80, 8080-8880]
+      override-destination: true
+    TLS:
+      ports: [443, 8443]
+    QUIC:
+      ports: [443, 8443]
+  skip-domain:
+    - "Mijia Cloud"
+    - "+.push.apple.com"
+
+# -------- 连接调优 ----------------------------------------------------------
+tcp-concurrent: true
+unified-delay: true
+find-process-mode: "off"
+global-client-fingerprint: chrome
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+# ==============================================================================
+proxy-groups:
+  # -------- ① 主控 --------------------------------------------------------
+  - name: "🚀 节点选择"
+    type: select
+    proxies:
+      - "♻️ 自动选择"
+      - "🔯 故转"
+      - "🇭🇰 香港节点"
+      - "🇯🇵 日本节点"
+      - "🇰🇷 韩国节点"
+      - "🇸🇬 新加坡节点"
+      - "🇺🇸 美国节点"
+      - DIRECT
+    include-all: true
+
+  - name: "♻️ 自动选择"
+    type: url-test
+    include-all: true
+    exclude-filter: '(?i)(剩余|流量|套餐|到期|过期|重置|官网|邀请|客服|订阅|试用|续费|充值|购买|网址|公告|通知|邮箱|群组|Expire|Traffic|Official|Website|Renew|Purchase|Support|Notice|Report)'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+
+  - name: "🔯 故转"
+    type: fallback
+    include-all: true
+    exclude-filter: '(?i)(剩余|流量|套餐|到期|过期|重置|官网|邀请|客服|订阅|试用|续费|充值|购买|网址|公告|通知|邮箱|群组|Expire|Traffic|Official|Website|Renew|Purchase|Support|Notice|Report)'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+
+  # -------- ② 热门地区 ------------------------------------------------------
+  - name: "🇭🇰 香港节点"
+    type: select
+    proxies: ["♻️ 香港自动", "🔯 香港故转"]
+    include-all: true
+    filter: '(?i)香港|港|HK|HKG|Hong ?Kong|HongKong|🇭🇰'
+    exclude-filter: '(?i)(剩余|流量|套餐|到期|过期|重置|官网|邀请|客服|订阅|试用|续费|充值|购买|网址|公告|通知|邮箱|群组|Expire|Traffic|Official|Website|Renew|Purchase|Support|Notice|Report)'
+
+  - name: "♻️ 香港自动"
+    type: url-test
+    include-all: true
+    filter: '(?i)香港|港|HK|HKG|Hong ?Kong|HongKong|🇭🇰'
+    exclude-filter: '(?i)(剩余|流量|套餐|到期|过期|重置|官网|邀请|客服|订阅|试用|续费|充值|购买|网址|公告|通知|邮箱|群组|Expire|Traffic|Official|Website|Renew|Purchase|Support|Notice|Report)'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+
+  - name: "🔯 香港故转"
+    type: fallback
+    include-all: true
+    filter: '(?i)香港|港|HK|HKG|Hong ?Kong|HongKong|🇭🇰'
+    exclude-filter: '(?i)(剩余|流量|套餐|到期|过期|重置|官网|邀请|客服|订阅|试用|续费|充值|购买|网址|公告|通知|邮箱|群组|Expire|Traffic|Official|Website|Renew|Purchase|Support|Notice|Report)'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+
+  - name: "🇯🇵 日本节点"
+    type: select
+    proxies: ["♻️ 日本自动", "🔯 日本故转"]
+    include-all: true
+    filter: '(?i)日本|JP|JPN|Japan|Tokyo|Osaka|东京|大阪|🇯🇵'
+    exclude-filter: '(?i)(剩余|流量|套餐|到期|过期|重置|官网|邀请|客服|订阅|试用|续费|充值|购买|网址|公告|通知|邮箱|群组|Expire|Traffic|Official|Website|Renew|Purchase|Support|Notice|Report)'
+
+  - name: "♻️ 日本自动"
+    type: url-test
+    include-all: true
+    filter: '(?i)日本|JP|JPN|Japan|Tokyo|Osaka|东京|大阪|🇯🇵'
+    exclude-filter: '(?i)(剩余|流量|套餐|到期|过期|重置|官网|邀请|客服|订阅|试用|续费|充值|购买|网址|公告|通知|邮箱|群组|Expire|Traffic|Official|Website|Renew|Purchase|Support|Notice|Report)'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+
+  - name: "🔯 日本故转"
+    type: fallback
+    include-all: true
+    filter: '(?i)日本|JP|JPN|Japan|Tokyo|Osaka|东京|大阪|🇯🇵'
+    exclude-filter: '(?i)(剩余|流量|套餐|到期|过期|重置|官网|邀请|客服|订阅|试用|续费|充值|购买|网址|公告|通知|邮箱|群组|Expire|Traffic|Official|Website|Renew|Purchase|Support|Notice|Report)'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+
+  - name: "🇰🇷 韩国节点"
+    type: select
+    proxies: ["♻️ 韩国自动", "🔯 韩国故转"]
+    include-all: true
+    filter: '(?i)韩国|韩|南韩|KOR|KR|Korea|Seoul|首尔|🇰🇷'
+    exclude-filter: '(?i)(剩余|流量|套餐|到期|过期|重置|官网|邀请|客服|订阅|试用|续费|充值|购买|网址|公告|通知|邮箱|群组|Expire|Traffic|Official|Website|Renew|Purchase|Support|Notice|Report)'
+
+  - name: "♻️ 韩国自动"
+    type: url-test
+    include-all: true
+    filter: '(?i)韩国|韩|南韩|KOR|KR|Korea|Seoul|首尔|🇰🇷'
+    exclude-filter: '(?i)(剩余|流量|套餐|到期|过期|重置|官网|邀请|客服|订阅|试用|续费|充值|购买|网址|公告|通知|邮箱|群组|Expire|Traffic|Official|Website|Renew|Purchase|Support|Notice|Report)'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+
+  - name: "🔯 韩国故转"
+    type: fallback
+    include-all: true
+    filter: '(?i)韩国|韩|南韩|KOR|KR|Korea|Seoul|首尔|🇰🇷'
+    exclude-filter: '(?i)(剩余|流量|套餐|到期|过期|重置|官网|邀请|客服|订阅|试用|续费|充值|购买|网址|公告|通知|邮箱|群组|Expire|Traffic|Official|Website|Renew|Purchase|Support|Notice|Report)'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+
+  - name: "🇸🇬 新加坡节点"
+    type: select
+    proxies: ["♻️ 新加坡自动", "🔯 新加坡故转"]
+    include-all: true
+    filter: '(?i)新加坡|狮城|SG|SGP|Singapore|🇸🇬'
+    exclude-filter: '(?i)(剩余|流量|套餐|到期|过期|重置|官网|邀请|客服|订阅|试用|续费|充值|购买|网址|公告|通知|邮箱|群组|Expire|Traffic|Official|Website|Renew|Purchase|Support|Notice|Report)'
+
+  - name: "♻️ 新加坡自动"
+    type: url-test
+    include-all: true
+    filter: '(?i)新加坡|狮城|SG|SGP|Singapore|🇸🇬'
+    exclude-filter: '(?i)(剩余|流量|套餐|到期|过期|重置|官网|邀请|客服|订阅|试用|续费|充值|购买|网址|公告|通知|邮箱|群组|Expire|Traffic|Official|Website|Renew|Purchase|Support|Notice|Report)'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+
+  - name: "🔯 新加坡故转"
+    type: fallback
+    include-all: true
+    filter: '(?i)新加坡|狮城|SG|SGP|Singapore|🇸🇬'
+    exclude-filter: '(?i)(剩余|流量|套餐|到期|过期|重置|官网|邀请|客服|订阅|试用|续费|充值|购买|网址|公告|通知|邮箱|群组|Expire|Traffic|Official|Website|Renew|Purchase|Support|Notice|Report)'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+
+  - name: "🇺🇸 美国节点"
+    type: select
+    proxies: ["♻️ 美国自动", "🔯 美国故转"]
+    include-all: true
+    filter: '(?i)美国|USA|\bUS\b|United States|America|洛杉矶|圣何塞|硅谷|西雅图|纽约|达拉斯|芝加哥|凤凰城|阿什本|🇺🇸'
+    exclude-filter: '(?i)(剩余|流量|套餐|到期|过期|重置|官网|邀请|客服|订阅|试用|续费|充值|购买|网址|公告|通知|邮箱|群组|Expire|Traffic|Official|Website|Renew|Purchase|Support|Notice|Report)'
+
+  - name: "♻️ 美国自动"
+    type: url-test
+    include-all: true
+    filter: '(?i)美国|USA|\bUS\b|United States|America|洛杉矶|圣何塞|硅谷|西雅图|纽约|达拉斯|芝加哥|凤凰城|阿什本|🇺🇸'
+    exclude-filter: '(?i)(剩余|流量|套餐|到期|过期|重置|官网|邀请|客服|订阅|试用|续费|充值|购买|网址|公告|通知|邮箱|群组|Expire|Traffic|Official|Website|Renew|Purchase|Support|Notice|Report)'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 50
+
+  - name: "🔯 美国故转"
+    type: fallback
+    include-all: true
+    filter: '(?i)美国|USA|\bUS\b|United States|America|洛杉矶|圣何塞|硅谷|西雅图|纽约|达拉斯|芝加哥|凤凰城|阿什本|🇺🇸'
+    exclude-filter: '(?i)(剩余|流量|套餐|到期|过期|重置|官网|邀请|客服|订阅|试用|续费|充值|购买|网址|公告|通知|邮箱|群组|Expire|Traffic|Official|Website|Renew|Purchase|Support|Notice|Report)'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+
+  # -------- ③ 业务分流 ------------------------------------------------------
+  - name: "🤖 AI服务"
+    type: select
+    proxies:
+      - "🇺🇸 美国节点"
+      - "🇯🇵 日本节点"
+      - "🇸🇬 新加坡节点"
+      - "🚀 节点选择"
+      - "♻️ 自动选择"
+
+  - name: "📺 国际流媒体"
+    type: select
+    proxies:
+      - "🇭🇰 香港节点"
+      - "🇯🇵 日本节点"
+      - "🇰🇷 韩国节点"
+      - "🇸🇬 新加坡节点"
+      - "🇺🇸 美国节点"
+      - "🚀 节点选择"
+      - "♻️ 自动选择"
+
+  - name: "📲 电报消息"
+    type: select
+    proxies:
+      - "🚀 节点选择"
+      - "🇭🇰 香港节点"
+      - "🇯🇵 日本节点"
+      - "♻️ 自动选择"
+
+  # -------- ④ 直连 / 拦截开关 -------------------------------------------------
+  - name: "📥 Steam下载直连"
+    type: select
+    proxies: [DIRECT, "🚀 节点选择"]
+
+  - name: "🎯 全球直连"
+    type: select
+    proxies: [DIRECT, "🚀 节点选择"]
+
+  - name: "🛑 广告拦截"
+    type: select
+    proxies: [REJECT, DIRECT]
+
+  - name: "🐟 漏网之鱼"
+    type: select
+    proxies: ["🚀 节点选择", "♻️ 自动选择", DIRECT]
+
+# ==============================================================================
+rule-providers:
+  ads:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-ads-all.mrs"
+    path: ./ruleset/ads.mrs
+    interval: 86400
+
+  private-domain:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/private.mrs"
+    path: ./ruleset/private-domain.mrs
+    interval: 86400
+
+  private-ip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/private.mrs"
+    path: ./ruleset/private-ip.mrs
+    interval: 86400
+
+  cn-domain:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/cn.mrs"
+    path: ./ruleset/cn-domain.mrs
+    interval: 86400
+
+  cn-ip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/cn.mrs"
+    path: ./ruleset/cn-ip.mrs
+    interval: 86400
+
+  ai-telemetry:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-ai-!cn@telemetry.mrs"
+    path: ./ruleset/ai-telemetry.mrs
+    interval: 86400
+
+  ai-chat:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/category-ai-!cn.mrs"
+    path: ./ruleset/ai-chat.mrs
+    interval: 86400
+
+  openai:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/openai.mrs"
+    path: ./ruleset/openai.mrs
+    interval: 86400
+
+  anthropic:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/anthropic.mrs"
+    path: ./ruleset/anthropic.mrs
+    interval: 86400
+
+  google-gemini:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/google-gemini.mrs"
+    path: ./ruleset/google-gemini.mrs
+    interval: 86400
+
+  youtube:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/youtube.mrs"
+    path: ./ruleset/youtube.mrs
+    interval: 86400
+
+  netflix:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/netflix.mrs"
+    path: ./ruleset/netflix.mrs
+    interval: 86400
+
+  disney:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/disney.mrs"
+    path: ./ruleset/disney.mrs
+    interval: 86400
+
+  hbo:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/hbo.mrs"
+    path: ./ruleset/hbo.mrs
+    interval: 86400
+
+  primevideo:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/primevideo.mrs"
+    path: ./ruleset/primevideo.mrs
+    interval: 86400
+
+  spotify:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/spotify.mrs"
+    path: ./ruleset/spotify.mrs
+    interval: 86400
+
+  tiktok:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/tiktok.mrs"
+    path: ./ruleset/tiktok.mrs
+    interval: 86400
+
+  telegram:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/telegram.mrs"
+    path: ./ruleset/telegram.mrs
+    interval: 86400
+
+  telegram-ip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/telegram.mrs"
+    path: ./ruleset/telegram-ip.mrs
+    interval: 86400
+
+  twitter:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/twitter.mrs"
+    path: ./ruleset/twitter.mrs
+    interval: 86400
+
+  facebook:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/facebook.mrs"
+    path: ./ruleset/facebook.mrs
+    interval: 86400
+
+  instagram:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/instagram.mrs"
+    path: ./ruleset/instagram.mrs
+    interval: 86400
+
+  google:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/google.mrs"
+    path: ./ruleset/google.mrs
+    interval: 86400
+
+  github:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/github.mrs"
+    path: ./ruleset/github.mrs
+    interval: 86400
+
+  gitlab:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/gitlab.mrs"
+    path: ./ruleset/gitlab.mrs
+    interval: 86400
+
+  microsoft:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/microsoft.mrs"
+    path: ./ruleset/microsoft.mrs
+    interval: 86400
+
+  apple:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/apple.mrs"
+    path: ./ruleset/apple.mrs
+    interval: 86400
+
+  steam:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/steam.mrs"
+    path: ./ruleset/steam.mrs
+    interval: 86400
+
+  epicgames:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/epicgames.mrs"
+    path: ./ruleset/epicgames.mrs
+    interval: 86400
+
+  playstation:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/playstation.mrs"
+    path: ./ruleset/playstation.mrs
+    interval: 86400
+
+  xbox:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/xbox.mrs"
+    path: ./ruleset/xbox.mrs
+    interval: 86400
+
+  nintendo:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/nintendo.mrs"
+    path: ./ruleset/nintendo.mrs
+    interval: 86400
+
+  paypal:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/paypal.mrs"
+    path: ./ruleset/paypal.mrs
+    interval: 86400
+
+  bilibili:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/bilibili.mrs"
+    path: ./ruleset/bilibili.mrs
+    interval: 86400
+
+# ==============================================================================
+rules:
+  # -------- 源头放行 --------------------------------------------------------
+  - SRC-IP-CIDR,192.168.20.0/24,DIRECT
+  - SRC-IP-CIDR,192.168.10.2/32,DIRECT
+
+  # -------- 0. 私有网络 -----------------------------------------------------
+  - RULE-SET,private-domain,🎯 全球直连
+  - RULE-SET,private-ip,🎯 全球直连,no-resolve
+  - IP-CIDR,127.0.0.0/8,🎯 全球直连,no-resolve
+  - IP-CIDR,10.0.0.0/8,🎯 全球直连,no-resolve
+  - IP-CIDR,172.16.0.0/12,🎯 全球直连,no-resolve
+  - IP-CIDR,192.168.0.0/16,🎯 全球直连,no-resolve
+  - IP-CIDR,100.64.0.0/10,🎯 全球直连,no-resolve
+  - IP-CIDR,169.254.0.0/16,🎯 全球直连,no-resolve
+  - IP-CIDR6,fe80::/10,🎯 全球直连,no-resolve
+  - DOMAIN-SUFFIX,local,🎯 全球直连
+  - DOMAIN-SUFFIX,lan,🎯 全球直连
+
+  # -------- 1. 广告拦截 -----------------------------------------------------
+  - RULE-SET,ads,🛑 广告拦截
+  - RULE-SET,ai-telemetry,🛑 广告拦截
+
+  # -------- 2. AI 服务 ----------------------------------------------------
+  - RULE-SET,ai-chat,🤖 AI服务
+  - RULE-SET,openai,🤖 AI服务
+  - RULE-SET,anthropic,🤖 AI服务
+  - RULE-SET,google-gemini,🤖 AI服务
+  - DOMAIN-SUFFIX,openai.com,🤖 AI服务
+  - DOMAIN-SUFFIX,chatgpt.com,🤖 AI服务
+  - DOMAIN-SUFFIX,chat.com,🤖 AI服务
+  - DOMAIN-SUFFIX,sora.com,🤖 AI服务
+  - DOMAIN-SUFFIX,oaistatic.com,🤖 AI服务
+  - DOMAIN-SUFFIX,oaiusercontent.com,🤖 AI服务
+  - DOMAIN-SUFFIX,anthropic.com,🤖 AI服务
+  - DOMAIN-SUFFIX,claude.ai,🤖 AI服务
+  - DOMAIN-SUFFIX,gemini.google.com,🤖 AI服务
+  - DOMAIN-SUFFIX,bard.google.com,🤖 AI服务
+  - DOMAIN-SUFFIX,perplexity.ai,🤖 AI服务
+  - DOMAIN-SUFFIX,midjourney.com,🤖 AI服务
+  - DOMAIN-SUFFIX,x.ai,🤖 AI服务
+  - DOMAIN-SUFFIX,grok.com,🤖 AI服务
+  - DOMAIN-SUFFIX,copilot.microsoft.com,🤖 AI服务
+  - DOMAIN-SUFFIX,copilot.com,🤖 AI服务
+  - DOMAIN-SUFFIX,mistral.ai,🤖 AI服务
+  - DOMAIN-SUFFIX,chat.mistral.ai,🤖 AI服务
+  - DOMAIN-SUFFIX,poe.com,🤖 AI服务
+  - DOMAIN-SUFFIX,character.ai,🤖 AI服务
+  - DOMAIN-SUFFIX,huggingface.co,🤖 AI服务
+  - DOMAIN-SUFFIX,groq.com,🤖 AI服务
+  - DOMAIN-SUFFIX,openrouter.ai,🤖 AI服务
+  - DOMAIN-SUFFIX,together.ai,🤖 AI服务
+  - DOMAIN-SUFFIX,api.together.xyz,🤖 AI服务
+  - DOMAIN-SUFFIX,fireworks.ai,🤖 AI服务
+  - DOMAIN-SUFFIX,deepinfra.com,🤖 AI服务
+  - DOMAIN-SUFFIX,replicate.com,🤖 AI服务
+  - DOMAIN-SUFFIX,cohere.ai,🤖 AI服务
+  - DOMAIN-SUFFIX,cohere.com,🤖 AI服务
+  - DOMAIN-SUFFIX,suno.com,🤖 AI服务
+  - DOMAIN-SUFFIX,udio.com,🤖 AI服务
+  - DOMAIN-SUFFIX,elevenlabs.io,🤖 AI服务
+  - DOMAIN-SUFFIX,runwayml.com,🤖 AI服务
+  - DOMAIN-SUFFIX,lumalabs.ai,🤖 AI服务
+  - DOMAIN-SUFFIX,pika.art,🤖 AI服务
+  - DOMAIN-SUFFIX,ideogram.ai,🤖 AI服务
+  - DOMAIN-SUFFIX,leonardo.ai,🤖 AI服务
+  - DOMAIN-SUFFIX,civitai.com,🤖 AI服务
+  - DOMAIN-SUFFIX,tensor.art,🤖 AI服务
+  - DOMAIN-SUFFIX,seaart.ai,🤖 AI服务
+  - DOMAIN-SUFFIX,lmarena.ai,🤖 AI服务
+  - DOMAIN-SUFFIX,arena.ai,🤖 AI服务
+  - DOMAIN-SUFFIX,aistudio.google.com,🤖 AI服务
+  - DOMAIN-SUFFIX,v0.dev,🤖 AI服务
+  - DOMAIN-SUFFIX,lovable.dev,🤖 AI服务
+  - DOMAIN-SUFFIX,bolt.new,🤖 AI服务
+  - DOMAIN-SUFFIX,windsurf.com,🤖 AI服务
+
+  - DOMAIN-KEYWORD,openai,🤖 AI服务
+
+  # -------- 3. 国际流媒体 ----------------------------------------------------
+  - RULE-SET,youtube,📺 国际流媒体
+  - RULE-SET,netflix,📺 国际流媒体
+  - RULE-SET,disney,📺 国际流媒体
+  - RULE-SET,hbo,📺 国际流媒体
+  - RULE-SET,primevideo,📺 国际流媒体
+  - RULE-SET,spotify,📺 国际流媒体
+  - RULE-SET,tiktok,📺 国际流媒体
+
+  # -------- 4. 电报 -------------------------------------------------------
+  - RULE-SET,telegram,📲 电报消息
+  - RULE-SET,telegram-ip,📲 电报消息,no-resolve
+
+  # -------- 5. 其他境外服务 ---------------------------------------------------
+  - RULE-SET,twitter,🚀 节点选择
+  - RULE-SET,facebook,🚀 节点选择
+  - RULE-SET,instagram,🚀 节点选择
+  - RULE-SET,google,🚀 节点选择
+  - RULE-SET,github,🚀 节点选择
+  - RULE-SET,gitlab,🚀 节点选择
+  - DOMAIN-SUFFIX,ghcr.io,🚀 节点选择
+  - DOMAIN-SUFFIX,npmjs.org,🚀 节点选择
+  - DOMAIN-SUFFIX,pypi.org,🚀 节点选择
+  - DOMAIN-SUFFIX,docker.com,🚀 节点选择
+  - DOMAIN-SUFFIX,vercel.app,🚀 节点选择
+  - DOMAIN-SUFFIX,netlify.app,🚀 节点选择
+
+  # -------- 6. 游戏平台 -----------------------------------------------------
+  - DOMAIN-SUFFIX,cs.steampowered.com,📥 Steam下载直连
+  - DOMAIN-SUFFIX,steamcontent.com,📥 Steam下载直连
+  - DOMAIN-SUFFIX,steampipe.akamaized.net,📥 Steam下载直连
+  - DOMAIN-SUFFIX,steamcdn-a.akamaihd.net,📥 Steam下载直连
+  - DOMAIN-SUFFIX,steampipe.steamcontent.com,📥 Steam下载直连
+  - DOMAIN-SUFFIX,steamusercontent.com,📥 Steam下载直连
+  - DOMAIN-SUFFIX,steamstatic.com,📥 Steam下载直连
+  - RULE-SET,steam,🚀 节点选择
+  - RULE-SET,epicgames,🚀 节点选择
+  - RULE-SET,playstation,🚀 节点选择
+  - RULE-SET,xbox,🚀 节点选择
+  - RULE-SET,nintendo,🚀 节点选择
+
+  # -------- 7. 支付 -------------------------------------------------------
+  - RULE-SET,paypal,🚀 节点选择
+
+  # -------- 8. 微软 / 苹果 --------------------------------------------------
+  - RULE-SET,microsoft,🎯 全球直连
+  - RULE-SET,apple,🎯 全球直连
+
+  # -------- 9. 国内直连 -----------------------------------------------------
+  - RULE-SET,bilibili,🎯 全球直连
+  - RULE-SET,cn-domain,🎯 全球直连
+  - RULE-SET,cn-ip,🎯 全球直连,no-resolve
+  - DOMAIN-SUFFIX,qq.com,🎯 全球直连
+  - DOMAIN-SUFFIX,tencent.com,🎯 全球直连
+  - DOMAIN-SUFFIX,weixin.qq.com,🎯 全球直连
+  - DOMAIN-SUFFIX,taobao.com,🎯 全球直连
+  - DOMAIN-SUFFIX,tmall.com,🎯 全球直连
+  - DOMAIN-SUFFIX,aliyun.com,🎯 全球直连
+  - DOMAIN-SUFFIX,alipay.com,🎯 全球直连
+  - DOMAIN-SUFFIX,jd.com,🎯 全球直连
+  - DOMAIN-SUFFIX,baidu.com,🎯 全球直连
+  - DOMAIN-SUFFIX,zhihu.com,🎯 全球直连
+  - DOMAIN-SUFFIX,163.com,🎯 全球直连
+  - DOMAIN-SUFFIX,douyin.com,🎯 全球直连
+  - DOMAIN-SUFFIX,bytedance.com,🎯 全球直连
+  - DOMAIN-SUFFIX,mi.com,🎯 全球直连
+  - DOMAIN-SUFFIX,xiaomi.com,🎯 全球直连
+  - DOMAIN-SUFFIX,oiioii.ai,🎯 全球直连
+
+  # -------- 10. 兜底 ------------------------------------------------------
+  - MATCH,🐟 漏网之鱼
